@@ -2,7 +2,11 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-
+	//Fill the two coordinate vectors with some points, around the circle
+	for (float a = 0; a < TWO_PI; a += INC) {
+		vX.push_back(sin(a) * RADIUS);
+		vY.push_back(cos(a) * RADIUS);
+	}
 }
 
 //--------------------------------------------------------------
@@ -12,7 +16,8 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	ofBackground(0);
+	
+	//Draw the circle from the list of verteces
 }
 
 //--------------------------------------------------------------

@@ -5,6 +5,11 @@
 class ofApp : public ofBaseApp{
 
 	public:
+		
+		const int RESOLUTION = 200;
+		const int RADIUS = 200;
+		const float INC = TWO_PI / RESOLUTION;
+
 		void setup();
 		void update();
 		void draw();
@@ -21,4 +26,6 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		
+		vector<float> vX;
+		vector<float> vY;
 };
