@@ -14,8 +14,7 @@ class ofApp : public ofBaseApp{
 
 	public:
 		
-		int halfWidth;
-		int halfHeight;
+		ofVec2f centerScreen;
 
 		const int BASE_HEIGHT = 150; //The base height of the planet
 		const int RESOLUTION = 200; //The resolution of the circle both for land and water
@@ -37,10 +36,8 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
-		void addWaterOct(float r, float a, float x, float y);
-		void addLandOct(float r, float a, float x, float y);
-		float getLandNoise(float angle);
-		float getWaterNoise(float angle);
+		void addOctave(vector<NoiseOctave> &vec, float r, float a, float x, float y);
+		float getNoise(float angle, vector<NoiseOctave> &noiseVector);
 		
 		int waterColor = 0x00CCFF;
 		int landColor = 0x00FF44;
