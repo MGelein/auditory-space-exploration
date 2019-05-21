@@ -24,10 +24,13 @@ class ofApp : public ofBaseApp{
 	public:
 		
 		ofVec2f centerScreen;
+		ofTrueTypeFont font;
 
 		const int BASE_HEIGHT = 150; //The base height of the planet
 		const int RESOLUTION = 200; //The resolution of the circle both for land and water
 		const float INC = TWO_PI / RESOLUTION;//Increment, resolution of the circle
+		const string NAME_PARTS[10] = {"XI", "XO" , "XT", "TL", "BU", "BY", "CH", "KR", "AN", "PO"};
+		const string END_PARTS[10] = {"TL", "BIN", "BAR", "BOF", "KYT", "BER", "NF", "TIR", "NC64", "BEG"};
 
 		void setup();
 		void update();
@@ -53,10 +56,13 @@ class ofApp : public ofBaseApp{
 		void animateStars();
 		void calcTerrain();
 		void generateStars();
+
+		string getPlanetName();
 		
-		int waterColor = 0x00CCFF;
-		int landColor = 0x00FF44;
+		ofColor waterColor = 0x00CCFF;
+		ofColor landColor = 0x00FF44;
 		float planetRotation = 0;
+		string planetName = "OXITHAXATL";
 		vector<ofVec2f> landVerts;//The verteces that make up the circle of the land
 		vector<ofVec2f> waterVerts;//The verteces that make up the circle of the water
 		vector<NoiseOctave> landOctaves;//The settings for the generator for land

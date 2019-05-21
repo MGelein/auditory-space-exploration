@@ -2,13 +2,15 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+	//Load the font
+	font.load("galaxy.ttf", 32);
+
 	//Create the noise octaves for land
 	addOctave(landOctaves, 1, 70, 100, 100);
 	addOctave(landOctaves, 0.5, 10, 50, 50);
 	addOctave(landOctaves, 2, -40, 150, 150);
 	addOctave(landOctaves, 5, -10, 170, 170);
 	addOctave(landOctaves, 10, 5, 200, 200);
-	
 	//Create the noise octaves for water
 	addOctave(waterOctaves, 0.5, 4, 100, 100);
 	addOctave(waterOctaves, 2, -4, 200, 200);
@@ -25,9 +27,12 @@ void ofApp::setup(){
 	//Calculate the dimensions of the screen and store half, this is used to set center of the coordinate space
 	centerScreen.x = ofGetWidth() / 2;
 	centerScreen.y = ofGetHeight() / 2;
-
 	//Generate the stars
 	generateStars();
+	//Get a nice name, and some water and land colors
+	planetName = getPlanetName();
+	waterColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(150, 200));
+	landColor = ofColor::fromHsb(ofRandom(255), ofRandom(100, 200), ofRandom(100, 150));
 }
 
 //--------------------------------------------------------------
@@ -54,6 +59,10 @@ void ofApp::draw(){
 
 	//Now draw the planet
 	drawPlanet();
+
+	//Finally draw the UI
+	ofSetColor(255);
+	font.drawString(planetName, - font.stringWidth(planetName) / 2, -centerScreen.y + 50);
 }
 
 //Draws the complete planet including rotation and everything
@@ -61,11 +70,11 @@ void ofApp::drawPlanet() {
 	ofPushMatrix();
 	ofRotateDeg(planetRotation);
 	//Start drawing the watrer
-	ofSetHexColor(waterColor);
+	ofSetColor(waterColor);
 	//Draw the circle from the list of verteces
 	drawVerts(waterVerts);
 	//Do the same for land
-	ofSetHexColor(landColor);
+	ofSetColor(landColor);
 	//Draw the circle from the list of verteces
 	drawVerts(landVerts);
 	ofPopMatrix();
@@ -78,6 +87,19 @@ void ofApp::drawStars() {
 		ofSetColor(stars[i].c);
 		ofDrawCircle(stars[i].x, stars[i].y, stars[i].r);
 	}
+}
+
+//Returns a name made up of parts of names
+string ofApp::getPlanetName() {
+	int max = ofRandom(3, 6);
+	string name = "";
+	for (int i = 0; i < max; i++) {
+		int index = ofRandom(0, 10);
+		name += NAME_PARTS[index];
+	};
+	int index = ofRandom(0, 10);
+	name += END_PARTS[index];
+	return name;
 }
 
 //Fills the stars array with a list of stars
