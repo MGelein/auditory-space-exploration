@@ -35,12 +35,16 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-
+		void drawVerts(vector <ofVec2f> &vec);
 		void addOctave(vector<NoiseOctave> &vec, float r, float a, float x, float y);
 		float getNoise(float angle, vector<NoiseOctave> &noiseVector);
+		void drawPlanet();
+		void animateWater();
+		void calcTerrain();
 		
 		int waterColor = 0x00CCFF;
 		int landColor = 0x00FF44;
+		float planetRotation = 0;
 		vector<ofVec2f> landVerts;//The verteces that make up the circle of the land
 		vector<ofVec2f> waterVerts;//The verteces that make up the circle of the water
 		vector<NoiseOctave> landOctaves;//The settings for the generator for land
