@@ -2,13 +2,24 @@
 
 #include "ofMain.h"
 
+
+struct NoiseOctave {
+	float x;//The position this noise gen samples from
+	float y;
+	float radius;//The radius this noise samples in
+	float amplitude;//The amplitude this noisegen makes for the actual planet
+};
+
 class ofApp : public ofBaseApp{
 
 	public:
 		
-		const int RESOLUTION = 200;
-		const int RADIUS = 200;
-		const float INC = TWO_PI / RESOLUTION;
+		int halfWidth;
+		int halfHeight;
+
+		const int BASE_HEIGHT = 150; //The base height of the planet
+		const int RESOLUTION = 200; //The resolution of the circle both for land and water
+		const float INC = TWO_PI / RESOLUTION;//Increment, resolution of the circle
 
 		void setup();
 		void update();
@@ -25,7 +36,16 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+
+		void addWaterOct(float r, float a, float x, float y);
+		void addLandOct(float r, float a, float x, float y);
+		float getLandNoise(float angle);
+		float getWaterNoise(float angle);
 		
-		vector<float> vX;
-		vector<float> vY;
+		int waterColor = 0x00CCFF;
+		int landColor = 0x00FF44;
+		vector<ofVec2f> landVerts;//The verteces that make up the circle of the land
+		vector<ofVec2f> waterVerts;//The verteces that make up the circle of the water
+		vector<NoiseOctave> landOctaves;//The settings for the generator for land
+		vector<NoiseOctave> waterOctaves;//The settings for the generator for water
 };
