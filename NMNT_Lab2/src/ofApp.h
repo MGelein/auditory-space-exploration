@@ -10,6 +10,15 @@ struct NoiseOctave {
 	float amplitude;//The amplitude this noisegen makes for the actual planet
 };
 
+struct Star{
+	float x;//The x-coordainte of this star
+	float y;//The y coordainte of this star
+	float vx;
+	float vy;
+	float r;//The radius of the star
+	ofColor c;//The color of this star
+};
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -39,8 +48,11 @@ class ofApp : public ofBaseApp{
 		void addOctave(vector<NoiseOctave> &vec, float r, float a, float x, float y);
 		float getNoise(float angle, vector<NoiseOctave> &noiseVector);
 		void drawPlanet();
+		void drawStars();
 		void animateWater();
+		void animateStars();
 		void calcTerrain();
+		void generateStars();
 		
 		int waterColor = 0x00CCFF;
 		int landColor = 0x00FF44;
@@ -49,4 +61,5 @@ class ofApp : public ofBaseApp{
 		vector<ofVec2f> waterVerts;//The verteces that make up the circle of the water
 		vector<NoiseOctave> landOctaves;//The settings for the generator for land
 		vector<NoiseOctave> waterOctaves;//The settings for the generator for water
+		vector<Star> stars;//List of all stars that are visible in the area
 };

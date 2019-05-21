@@ -25,6 +25,9 @@ void ofApp::setup(){
 	//Calculate the dimensions of the screen and store half, this is used to set center of the coordinate space
 	centerScreen.x = ofGetWidth() / 2;
 	centerScreen.y = ofGetHeight() / 2;
+
+	//Generate the stars
+	generateStars();
 }
 
 //--------------------------------------------------------------
@@ -36,6 +39,8 @@ void ofApp::update(){
 	//Animate the planet rotation
 	planetRotation -= 0.1;
 	if (planetRotation < 0) planetRotation = 360;
+	//Animate the stars
+	animateStars();
 }
 
 //--------------------------------------------------------------
@@ -45,6 +50,7 @@ void ofApp::draw(){
 
 	//Set the background to black for now
 	ofBackground(0);
+	drawStars();
 
 	//Now draw the planet
 	drawPlanet();
@@ -63,6 +69,46 @@ void ofApp::drawPlanet() {
 	//Draw the circle from the list of verteces
 	drawVerts(landVerts);
 	ofPopMatrix();
+}
+
+//Draws every star in the list of stars
+void ofApp::drawStars() {
+	int max = stars.size();
+	for (int i = 0; i < max; i++) {
+		ofSetColor(stars[i].c);
+		ofDrawCircle(stars[i].x, stars[i].y, stars[i].r);
+	}
+}
+
+//Fills the stars array with a list of stars
+void ofApp::generateStars() {
+	//Remove all previous stars
+	stars.clear();
+	//Make a random amount of new stars
+	int max = ofRandom(50, 500);
+	for (int i = 0; i < max; i++) {
+		Star s;
+		s.c = ofColor::fromHsb(ofRandom(0, 255), ofRandom(0, 100), ofRandom(150, 255));
+		s.x = ofRandom(-centerScreen.x, centerScreen.x);
+		s.y = ofRandom(-centerScreen.y, centerScreen.y);
+		s.vx = ofRandom(0, .05);
+		s.vy = ofRandom(0, .05);
+		s.r = ofRandom(0.2, 2);
+		stars.push_back(s);
+	}
+}
+
+//Animates all the stars in the starfield
+void ofApp::animateStars() {
+	int max = stars.size();
+	for (int i = 0; i < max; i++) {
+		stars[i].x += stars[i].vx;
+		stars[i].y += stars[i].vy;
+		if (stars[i].x > centerScreen.x) stars[i].x = -centerScreen.x;
+		else if (stars[i].x < -centerScreen.x) stars[i].x = centerScreen.x;
+		if (stars[i].y > centerScreen.y) stars[i].y = -centerScreen.x;
+		else if (stars[i].y < -centerScreen.y) stars[i].y = centerScreen.x;
+	}
 }
 
 //Handles the animation of the water
