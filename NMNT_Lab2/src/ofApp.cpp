@@ -30,11 +30,13 @@ void ofApp::setup(){
 	//Generate the stars and clouds
 	generateStars();
 	generateClouds();
+	generateMoons();
 	//Get a nice name, and some water and land colors
-	planetName = getPlanetName();
-	waterColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(150, 200));
-	landColor = ofColor::fromHsb(ofRandom(255), ofRandom(100, 200), ofRandom(100, 150));
-	cloudColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(200, 250), 100);
+	planet.name = getPlanetName();
+	planet.angleV = 0.1;
+	planet.waterColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(150, 200));
+	planet.landColor = ofColor::fromHsb(ofRandom(255), ofRandom(100, 200), ofRandom(100, 150));
+	planet.cloudColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(200, 250), 100);
 }
 
 //--------------------------------------------------------------
@@ -44,11 +46,12 @@ void ofApp::update(){
 	//Animate the water
 	animateWater();
 	//Animate the planet rotation
-	planetRotation -= planetAngleV;
-	if (planetRotation < 0) planetRotation = 360;
-	//Animate the stars and clouds
+	planet.angle -= planet.angleV;
+	if (planet.angle < 0) planet.angle = 360;
+	//Animate the stars, moons and clouds
 	animateClouds();
 	animateStars();
+	animateMoons();
 }
 
 //--------------------------------------------------------------
@@ -62,23 +65,24 @@ void ofApp::draw(){
 
 	//Now draw the planet and clouds
 	drawPlanet();
+	drawMoons();
 	drawClouds();
 
 	//Finally draw the UI
 	ofSetColor(255);
-	planetNameFont.drawString(planetName, - planetNameFont.stringWidth(planetName) / 2, -centerScreen.y + 50);
+	planetNameFont.drawString(planet.name, - planetNameFont.stringWidth(planet.name) / 2, -centerScreen.y + 50);
 }
 
 //Draws the complete planet including rotation and everything
 void ofApp::drawPlanet() {
 	ofPushMatrix();
-	ofRotateDeg(planetRotation);
+	ofRotateDeg(planet.angle);
 	//Start drawing the watrer
-	ofSetColor(waterColor);
+	ofSetColor(planet.waterColor);
 	//Draw the circle from the list of verteces
 	drawVerts(waterVerts);
 	//Do the same for land
-	ofSetColor(landColor);
+	ofSetColor(planet.landColor);
 	//Draw the circle from the list of verteces
 	drawVerts(landVerts);
 	ofPopMatrix();
@@ -97,13 +101,23 @@ void ofApp::drawStars() {
 void ofApp::drawClouds() {
 	ofEnableAlphaBlending();
 	int max = clouds.size();
-	ofSetColor(cloudColor);
+	ofSetColor(planet.cloudColor);
 	ofVec2f pos;
 	for (int i = 0; i < max; i++) {
 		pos = p2c(clouds[i].angle, clouds[i].height);
 		ofDrawCircle(pos, clouds[i].radius);
 	}
 	ofDisableAlphaBlending();
+}
+
+void ofApp::drawMoons() {
+	int max = moons.size();
+	ofVec2f pos;
+	for (int i = 0; i < max; i++) {
+		ofSetColor(moons[i].color);
+		pos = p2c(moons[i].angle, moons[i].height);
+		ofDrawCircle(pos, moons[i].radius);
+	}
 }
 
 //Returns a name made up of parts of names
@@ -117,6 +131,22 @@ string ofApp::getPlanetName() {
 	int index = ofRandom(0, 10);
 	name += END_PARTS[index];
 	return name;
+}
+
+void ofApp::generateMoons() {
+	//Remove all previous moons
+	moons.clear();
+	//Random amt of moons
+	int max = ofRandom(0, 4);//Max 3 moons
+	for (int i = 0; i < max; i++) {
+		Moon m;
+		m.angle = ofRandom(TWO_PI);
+		m.angleV = ofRandom(-0.001, 0.01);
+		m.height = ofRandom(MAX_HEIGHT, MAX_HEIGHT + 50);
+		m.radius = ofRandom(20, 30);
+		m.color = ofColor(ofRandom(0, 255), ofRandom(50, 100), ofRandom(100, 150));
+		moons.push_back(m);
+	}
 }
 
 //Fills the stars array with a list of stars
@@ -159,6 +189,14 @@ void ofApp::generateClouds() {
 			clouds.push_back(c2);
 		}
 		clouds.push_back(c);
+	}
+}
+
+//Animates all the moons
+void ofApp::animateMoons() {
+	int max = moons.size();
+	for (int i = 0; i < max; i++) {
+		moons[i].angle += moons[i].angleV;
 	}
 }
 

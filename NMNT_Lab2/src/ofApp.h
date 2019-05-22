@@ -16,6 +16,14 @@ struct Cloud {
 	float radius;
 };
 
+struct Moon {
+	float angle;
+	float angleV;
+	float height;
+	float radius;
+	ofColor color;
+};
+
 struct Star{
 	float x;//The x-coordainte of this star
 	float y;//The y coordainte of this star
@@ -23,6 +31,15 @@ struct Star{
 	float vy;
 	float r;//The radius of the star
 	ofColor c;//The color of this star
+};
+
+struct Planet {
+	float angle;
+	float angleV;
+	string name;
+	ofColor waterColor;
+	ofColor landColor;
+	ofColor cloudColor;
 };
 
 class ofApp : public ofBaseApp{
@@ -64,6 +81,11 @@ class ofApp : public ofBaseApp{
 		void drawPlanet();
 		void animateWater();
 		void animateTerrain();
+
+		void generateMoons();
+		void animateMoons();
+		void drawMoons();
+		vector<Moon> moons;//List of all the moons that this planet has
 		
 		void generateStars();
 		void animateStars();
@@ -74,14 +96,9 @@ class ofApp : public ofBaseApp{
 		void animateClouds();
 		void drawClouds();
 		vector<Cloud> clouds;//List of all the clouds
-
+		
 		string getPlanetName();
-		ofColor waterColor = 0x00CCFF;
-		ofColor landColor = 0x00FF44;
-		ofColor cloudColor = 0xFFFFFF;
-		float planetRotation = 0;
-		float planetAngleV = 0.1;
-		string planetName = "OXITHAXATL";
+		Planet planet; //Stores all planet related information
 		vector<ofVec2f> landVerts;//The verteces that make up the circle of the land
 		vector<ofVec2f> waterVerts;//The verteces that make up the circle of the water
 		vector<NoiseOctave> landOctaves;//The settings for the generator for land
