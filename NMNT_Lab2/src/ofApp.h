@@ -1,12 +1,18 @@
 #pragma once
 
-#include "ofMain.h"
+#include "ofMain.h"	
 
 struct NoiseOctave {
 	float x;//The position this noise gen samples from
 	float y;
 	float radius;//The radius this noise samples in
 	float amplitude;//The amplitude this noisegen makes for the actual planet
+};
+
+struct Cloud {
+	float angle;
+	float angleV;
+	float height;
 };
 
 struct Star{
@@ -23,7 +29,7 @@ class ofApp : public ofBaseApp{
 	public:
 		
 		ofVec2f centerScreen;
-		ofTrueTypeFont font;
+		ofTrueTypeFont planetNameFont;
 
 		const int BASE_HEIGHT = 150; //The base height of the planet
 		const int RESOLUTION = 200; //The resolution of the circle both for land and water
@@ -46,25 +52,34 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-		void drawVerts(vector <ofVec2f> &vec);
+
 		void addOctave(vector<NoiseOctave> &vec, float r, float a, float x, float y);
 		float getNoise(float angle, vector<NoiseOctave> &noiseVector);
+		ofVec2f p2c(float angle, float radius);
+
+		void drawVerts(vector <ofVec2f> &vec);
 		void drawPlanet();
-		void drawStars();
 		void animateWater();
-		void animateStars();
-		void calcTerrain();
+		void animateTerrain();
+		
 		void generateStars();
+		void animateStars();
+		void drawStars();
+		vector<Star> stars;//List of all stars that are visible in the area
+		
+		void generateClouds();
+		void animateClouds();
+		void drawClouds();
+		vector<Cloud> clouds;//List of all the clouds
 
 		string getPlanetName();
-		
 		ofColor waterColor = 0x00CCFF;
 		ofColor landColor = 0x00FF44;
+		ofColor cloudColor = 0xFFFFFF;
 		float planetRotation = 0;
 		string planetName = "OXITHAXATL";
 		vector<ofVec2f> landVerts;//The verteces that make up the circle of the land
 		vector<ofVec2f> waterVerts;//The verteces that make up the circle of the water
 		vector<NoiseOctave> landOctaves;//The settings for the generator for land
 		vector<NoiseOctave> waterOctaves;//The settings for the generator for water
-		vector<Star> stars;//List of all stars that are visible in the area
 };

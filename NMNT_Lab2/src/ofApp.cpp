@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	//Load the font
-	font.load("galaxy.ttf", 32);
+	planetNameFont.load("galaxy.ttf", 32);
 
 	//Create the noise octaves for land
 	addOctave(landOctaves, 1, 70, 100, 100);
@@ -27,24 +27,27 @@ void ofApp::setup(){
 	//Calculate the dimensions of the screen and store half, this is used to set center of the coordinate space
 	centerScreen.x = ofGetWidth() / 2;
 	centerScreen.y = ofGetHeight() / 2;
-	//Generate the stars
+	//Generate the stars and clouds
 	generateStars();
+	generateClouds();
 	//Get a nice name, and some water and land colors
 	planetName = getPlanetName();
 	waterColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(150, 200));
 	landColor = ofColor::fromHsb(ofRandom(255), ofRandom(100, 200), ofRandom(100, 150));
+	cloudColor = ofColor::fromHsb(ofRandom(255), ofRandom(0, 50), ofRandom(200, 250));
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 	//Calculate the terrain every frame, so we're ready for re-gen
-	calcTerrain();
+	animateTerrain();
 	//Animate the water
 	animateWater();
 	//Animate the planet rotation
 	planetRotation -= 0.1;
 	if (planetRotation < 0) planetRotation = 360;
-	//Animate the stars
+	//Animate the stars and clouds
+	animateClouds();
 	animateStars();
 }
 
@@ -57,12 +60,13 @@ void ofApp::draw(){
 	ofBackground(0);
 	drawStars();
 
-	//Now draw the planet
+	//Now draw the planet and clouds
 	drawPlanet();
+	drawClouds();
 
 	//Finally draw the UI
 	ofSetColor(255);
-	font.drawString(planetName, - font.stringWidth(planetName) / 2, -centerScreen.y + 50);
+	planetNameFont.drawString(planetName, - planetNameFont.stringWidth(planetName) / 2, -centerScreen.y + 50);
 }
 
 //Draws the complete planet including rotation and everything
@@ -86,6 +90,17 @@ void ofApp::drawStars() {
 	for (int i = 0; i < max; i++) {
 		ofSetColor(stars[i].c);
 		ofDrawCircle(stars[i].x, stars[i].y, stars[i].r);
+	}
+}
+
+//Draws every cloud that is on the surface of the planet
+void ofApp::drawClouds() {
+	int max = clouds.size();
+	ofSetColor(cloudColor);
+	ofVec2f pos;
+	for (int i = 0; i < max; i++) {
+		pos = p2c(clouds[i].angle, clouds[i].height);
+		ofDrawCircle(pos, 5);
 	}
 }
 
@@ -117,6 +132,27 @@ void ofApp::generateStars() {
 		s.vy = ofRandom(0, .05);
 		s.r = ofRandom(0.2, 2);
 		stars.push_back(s);
+	}
+}
+
+//Generates the cloud layers
+void ofApp::generateClouds() {
+	//Remove all prev clouds
+	clouds.clear();
+	int max = ofRandom(5, 20);
+	for (int i = 0; i < max; i++) {
+		Cloud c;
+		c.angle = ofRandom(TWO_PI);
+		c.angleV = ofRandom(0.0001, 0.001);
+		c.height = BASE_HEIGHT + ofRandom(50);
+		clouds.push_back(c);
+	}
+}
+
+void ofApp::animateClouds() {
+	int max = clouds.size();
+	for (int i = 0; i < max; i++) {
+		clouds[i].angle += clouds[i].angleV;
 	}
 }
 
@@ -155,7 +191,7 @@ void ofApp::animateWater() {
 }
 
 //Calculates the terrain as it should be according to the current noise gen parameters
-void ofApp::calcTerrain() {
+void ofApp::animateTerrain() {
 	//Regenerate water terrain
 	int max = landVerts.size();
 	float angle;
@@ -200,6 +236,13 @@ void ofApp::addOctave(vector<NoiseOctave> &vec, float r, float a, float x, float
 	oct.x = x;
 	oct.y = y;
 	vec.push_back(oct);
+}
+
+//Converts polar coordinates into carthesian coordinates
+ofVec2f ofApp::p2c(float angle, float radius) {
+	ofVec2f v;
+	v.set(sin(angle) * radius, cos(angle) * radius);
+	return v;
 }
 
 //--------------------------------------------------------------
