@@ -34,7 +34,7 @@ void ofApp::setup(){
 	planetName = getPlanetName();
 	waterColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(150, 200));
 	landColor = ofColor::fromHsb(ofRandom(255), ofRandom(100, 200), ofRandom(100, 150));
-	cloudColor = ofColor::fromHsb(ofRandom(255), ofRandom(0, 50), ofRandom(200, 250));
+	cloudColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(200, 250), 100);
 }
 
 //--------------------------------------------------------------
@@ -44,7 +44,7 @@ void ofApp::update(){
 	//Animate the water
 	animateWater();
 	//Animate the planet rotation
-	planetRotation -= 0.1;
+	planetRotation -= planetAngleV;
 	if (planetRotation < 0) planetRotation = 360;
 	//Animate the stars and clouds
 	animateClouds();
@@ -95,13 +95,15 @@ void ofApp::drawStars() {
 
 //Draws every cloud that is on the surface of the planet
 void ofApp::drawClouds() {
+	ofEnableAlphaBlending();
 	int max = clouds.size();
 	ofSetColor(cloudColor);
 	ofVec2f pos;
 	for (int i = 0; i < max; i++) {
 		pos = p2c(clouds[i].angle, clouds[i].height);
-		ofDrawCircle(pos, 5);
+		ofDrawCircle(pos, clouds[i].radius);
 	}
+	ofDisableAlphaBlending();
 }
 
 //Returns a name made up of parts of names
@@ -139,12 +141,23 @@ void ofApp::generateStars() {
 void ofApp::generateClouds() {
 	//Remove all prev clouds
 	clouds.clear();
-	int max = ofRandom(5, 20);
+	int max = ofRandom(10, 20);
 	for (int i = 0; i < max; i++) {
 		Cloud c;
 		c.angle = ofRandom(TWO_PI);
-		c.angleV = ofRandom(0.0001, 0.001);
-		c.height = BASE_HEIGHT + ofRandom(50);
+		c.height = BASE_HEIGHT + ofRandom(HEIGHT_RANGE);
+		c.angleV = ofMap(c.height, BASE_HEIGHT, MAX_HEIGHT, 0.005, 0, true);
+		c.radius = ofRandom(5, 10);
+		//How many clouds are part of this
+		int num = ofRandom(15, 25);
+		for (int j = 0; j < num; j++) {
+			Cloud c2;
+			c2.angle = c.angle + ofRandom(-.005 * num, .005 * num);
+			c2.height = c.height * ofRandom(0.95, 1.05);
+			c2.angleV = c.angleV;
+			c2.radius = c.radius * ofRandom(0.3, 1);
+			clouds.push_back(c2);
+		}
 		clouds.push_back(c);
 	}
 }

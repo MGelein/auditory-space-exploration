@@ -13,6 +13,7 @@ struct Cloud {
 	float angle;
 	float angleV;
 	float height;
+	float radius;
 };
 
 struct Star{
@@ -32,6 +33,8 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont planetNameFont;
 
 		const int BASE_HEIGHT = 150; //The base height of the planet
+		const int MAX_HEIGHT = 250;//The max height (includes the baseheigth)
+		const int HEIGHT_RANGE = MAX_HEIGHT - BASE_HEIGHT;
 		const int RESOLUTION = 200; //The resolution of the circle both for land and water
 		const float INC = TWO_PI / RESOLUTION;//Increment, resolution of the circle
 		const string NAME_PARTS[10] = {"XI", "XO" , "XT", "TL", "BU", "BY", "CH", "KR", "AN", "PO"};
@@ -77,6 +80,7 @@ class ofApp : public ofBaseApp{
 		ofColor landColor = 0x00FF44;
 		ofColor cloudColor = 0xFFFFFF;
 		float planetRotation = 0;
+		float planetAngleV = 0.1;
 		string planetName = "OXITHAXATL";
 		vector<ofVec2f> landVerts;//The verteces that make up the circle of the land
 		vector<ofVec2f> waterVerts;//The verteces that make up the circle of the water
