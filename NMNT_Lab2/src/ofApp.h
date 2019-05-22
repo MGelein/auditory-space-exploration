@@ -2,7 +2,6 @@
 
 #include "ofMain.h"
 
-
 struct NoiseOctave {
 	float x;//The position this noise gen samples from
 	float y;
