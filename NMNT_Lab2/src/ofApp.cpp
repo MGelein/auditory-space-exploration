@@ -164,9 +164,12 @@ string ofApp::getSizeClass() {
 void ofApp::drawMicGain() {
 	ofPushMatrix();
 	ofTranslate(micGainPos);
-	float w = ofMap(micVolume, 0, 0.2, 0, 1, true);
+	float w = ofMap(micVolume, 0, micMaxGain, 0, 1, true);
+	float l = ofMap(micThreshold, 0, micMaxGain, 0, 1, true);
 	ofSetColor(ofColor::fromHsb(100 - w * 100, 255, 255));
 	ofDrawRectangle(0, 0, w * 200, 10);
+	ofSetColor(ofColor::white);
+	ofDrawLine(ofVec2f(l * 200, 0), ofVec2f(l * 200, 20));
 	ofPopMatrix();
 }
 
@@ -628,7 +631,7 @@ void ofApp::analyseMic() {
 	//Push latest volume into the list of mic volumes
 	micHistory.push_back(micVolume);
 	//If we're currently being very silent
-	if (micVolume < 0.03) {
+	if (micVolume < micThreshold) {
 		if (!silenceRegistered) {
 			silenceRegistered = true;
 			silences++;
@@ -711,6 +714,7 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels) {
 		}
 	}
 	bufferVolume /= numSamples;
+	bufferVolume *= micGain;
 	micVolume += (bufferVolume - micVolume) * 0.1;
 }
 
@@ -719,6 +723,22 @@ void ofApp::keyPressed(int key){
 	if (key == 32) {//If space is pressed
 		spacePressed = true;
 		setHyperDrive(true);
+	}
+	else if (key == OF_KEY_LEFT) {
+		micThreshold -= 0.001;
+		if (micThreshold < 0.005) micThreshold = 0.005;
+	}
+	else if (key == OF_KEY_RIGHT) {
+		micThreshold += 0.001;
+		if (micThreshold > micMaxGain) micThreshold = micMaxGain;
+	}
+	else if (key == OF_KEY_UP) {
+		micGain += 0.05;
+		if (micGain > 2) micGain = 2;
+	}
+	else if (key == OF_KEY_DOWN) {
+		micGain -= 0.05;
+		if (micGain < 0.5) micGain = 0.5;
 	}
 }
 

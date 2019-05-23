@@ -168,6 +168,9 @@ class ofApp : public ofBaseApp{
 		vector<float> samples;
 		vector<float> micHistory;
 		float micVolume = 0;
+		float micGain = 1;//The amount of gain on the microphone
+		float micMaxGain = 0.2;//Anything over this is considered max gain
+		float micThreshold = 0.03;//This is the threshold below which is considered silence
 		float avgVolume = -1;
 		float dynamicRange = -1;
 		float recordLength = -1;
