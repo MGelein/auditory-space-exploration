@@ -2,6 +2,8 @@
 Second project for the New Media New Technology course of Media Technology MSc. of Leiden University. This time the theme was 'SPACE', and the only requirement
 was the usage of openFrameworks. 
 
+For more documentation see this page: [https://sites.google.com/site/newmedianewtechnology2019/portfolios/mees/space-silence-in-speaking](https://sites.google.com/site/newmedianewtechnology2019/portfolios/mees/space-silence-in-speaking)
+
 ## The Idea
 With SPACE as a theme, it makes sense to go for a outer space exploration phenomenon. This is however only the first layer. The second layer is the SPACE
 key present on any keyboard. This key creates spaces in your written text, and thus will be used as the primary input for the application. If spaces in written
