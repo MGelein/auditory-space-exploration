@@ -38,6 +38,9 @@ void ofApp::update(){
 	screenShake.y += ofRandom(-shakeForce, shakeForce);
 	screenShake.x *= 0.95;
 	screenShake.y *= 0.95;
+
+	//Do some mic analysis
+	if (recording) analyseMic();
 }
 
 //--------------------------------------------------------------
@@ -362,6 +365,8 @@ void ofApp::easeNumbers() {
 	planetOffset += (targetPlanetOffset - planetOffset) * 0.05;
 	shakeForce += (targetShakeForce - shakeForce) * 0.05;
 	bgAlpha += (targetBgAlpha - bgAlpha) * 0.05;
+	//Constantly pull micVolume lower, this 'erodes' mic volume, to make it pull to ground faster
+	micVolume *= 0.90;
 }
 
 //Sets the hyperdrive to the required status, also checks the minimum time has passed
@@ -373,20 +378,62 @@ void ofApp::setHyperDrive(bool enabled) {
 	if (enabled) {
 		recording = true;
 		micVolume = 0;//Reset volume to 0 for now
+		avgVolume = 0;
+		micHistory.clear();
 		targetStarSpeedMult = 1000;
 		targetShakeForce = 100;
 		targetPlanetOffset = ofGetWidth() * 1.5;
 		recordingFrames = 0;
 		targetBgAlpha = 10;
+		silences = 0;
 	}
 	else {
 		recording = false;
 		targetStarSpeedMult = 1;
+		avgVolume = getAvgVolume();
 		planetOffset = -targetPlanetOffset; //Swap sides so the new planet comes from the other side
 		targetPlanetOffset = 0;
 		targetShakeForce = 0;
 		targetBgAlpha = 100;
+		cout << "There were " << silences << " silence(s)" << endl; 
+		cout << "Average volume was " << avgVolume << endl;
+		cout << "Dynamic range was " << dynamicRange << endl;
 		generatePlanet();//Generate a new planet
+
+	}
+}
+
+//Returns the avg volume of the complete recording
+float ofApp::getAvgVolume() {
+	float sum = 0;
+	float max = 0;
+	float min = 1;
+	float eased = 0;
+	int num = micHistory.size();
+	for (int i = 0; i < num; i++) {
+		sum += micHistory[i];
+		eased += (micHistory[i] - eased) * 0.1;
+		if (eased < min) min = micHistory[i];
+		if (eased > max) max = micHistory[i];
+	}
+	dynamicRange = max - min;
+	return sum / num;
+}
+
+//Analyses the change in the micVolume variable
+void ofApp::analyseMic() {
+	if (micVolume == 0) return;//If we're just starting, ignore for now
+	//Push latest volume into the list of mic volumes
+	micHistory.push_back(micVolume);
+	//If we're currently being very silent
+	if (micVolume < 0.03) {
+		if (!silenceRegistered) {
+			silenceRegistered = true;
+			silences++;
+		}
+	}
+	else {
+		silenceRegistered = false;
 	}
 }
 

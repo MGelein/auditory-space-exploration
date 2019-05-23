@@ -125,7 +125,14 @@ class ofApp : public ofBaseApp{
 
 		void audioSetup();
 		void audioIn(float * input, int bufferSize, int nChannels);
+		float getAvgVolume();
 		ofSoundStream mic;
 		vector<float> samples;
+		vector<float> micHistory;
 		float micVolume = 0;
+		float avgVolume = 0;
+		float dynamicRange = 0;
+		void analyseMic();
+		bool silenceRegistered = true;
+		int silences = 0;
 };
