@@ -66,6 +66,8 @@ void ofApp::draw(){
 	ofTranslate(planetOffset, 0);
 	drawPlanet();
 
+	ofTranslate(centerScreen);
+	ofTranslate(planetOffset, 0);
 	drawMoons();
 	drawClouds();
 	
