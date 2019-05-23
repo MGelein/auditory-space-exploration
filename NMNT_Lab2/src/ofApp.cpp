@@ -65,8 +65,11 @@ void ofApp::draw(){
 
 	//Now draw the planet and clouds
 	drawPlanet();
+
+	ofEnableAlphaBlending();
 	drawMoons();
 	drawClouds();
+	ofDisableAlphaBlending();
 
 	//Finally draw the UI
 	ofSetColor(255);
@@ -99,7 +102,6 @@ void ofApp::drawStars() {
 
 //Draws every cloud that is on the surface of the planet
 void ofApp::drawClouds() {
-	ofEnableAlphaBlending();
 	int max = clouds.size();
 	ofSetColor(planet.cloudColor);
 	ofVec2f pos;
@@ -107,7 +109,6 @@ void ofApp::drawClouds() {
 		pos = p2c(clouds[i].angle, clouds[i].height);
 		ofDrawCircle(pos, clouds[i].radius);
 	}
-	ofDisableAlphaBlending();
 }
 
 void ofApp::drawMoons() {
@@ -146,6 +147,19 @@ void ofApp::generateMoons() {
 		m.radius = ofRandom(20, 30);
 		m.color = ofColor(ofRandom(0, 255), ofRandom(50, 100), ofRandom(100, 150));
 		moons.push_back(m);
+		//Create the spots
+		int num = ofRandom(1, 4);
+		float deltaA = atan2(m.radius * .5, m.height);
+		float offset[] = { deltaA, 0, -deltaA };
+		for (int j = 0; j < num; j++) {
+			Moon m2;
+			m2.angle = m.angle + offset[j];
+			m2.angleV = m.angleV;
+			m2.height = m.height + offset[j] * 0.5;
+			m2.radius = ofRandom(m.radius * .2, m.radius * .4);
+			m2.color = ofColor(0, 0, 0, 80);
+			moons.push_back(m2);
+		}
 	}
 }
 
