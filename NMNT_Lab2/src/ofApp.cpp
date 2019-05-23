@@ -2,25 +2,14 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+	ofSetBackgroundAuto(false);
 	//Load the font
-	planetNameFont.load("galaxy.ttf", 32);
-
-	//Create the noise octaves for land
-	addOctave(landOctaves, 1, 70, 100, 100);
-	addOctave(landOctaves, 0.5, 10, 50, 50);
-	addOctave(landOctaves, 2, -40, 150, 150);
-	addOctave(landOctaves, 5, -10, 170, 170);
-	addOctave(landOctaves, 10, 5, 200, 200);
-	//Create the noise octaves for water
-	addOctave(waterOctaves, 0.5, 4, 100, 100);
-	addOctave(waterOctaves, 2, -4, 200, 200);
-	addOctave(waterOctaves, 4, -2, 250, 250);
-	
+	planetNameFont.load("galaxy.ttf", 32);	
 	//Calculate the dimensions of the screen and store half, this is used to set center of the coordinate space
 	centerScreen.x = ofGetWidth() / 2;
 	centerScreen.y = ofGetHeight() / 2;
-	//Generate the stars
-	generateStars();
+	screenShake.set(0, 0);
+	//Generate the planet
 	generatePlanet();
 }
 
@@ -39,22 +28,29 @@ void ofApp::update(){
 	animateMoons();
 	//Ease all numbers
 	easeNumbers();
+
+	//Apply some screen shake proportionate to the shakeForce
+	screenShake.x += ofRandom(-shakeForce, shakeForce);
+	screenShake.y += ofRandom(-shakeForce, shakeForce);
+	screenShake.x *= 0.95;
+	screenShake.y *= 0.95;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	//Always translate the 0,0 of the coordinate space to the middle of the window
-	ofTranslate(centerScreen);
+	ofTranslate(centerScreen + screenShake);
 
-	//Set the background to black for now
-	ofBackground(0);
+	//Set the background to black for now and draw some stars
+	ofEnableAlphaBlending();
+	ofSetColor(ofColor(0, 0, 0, bgAlpha));
+	ofDrawRectangle(-1000, -1000, 3000, 3000);
 	drawStars();
 
 	//Now draw the planet and clouds
 	ofTranslate(planetOffset, 0);
 	drawPlanet();
 
-	ofEnableAlphaBlending();
 	drawMoons();
 	drawClouds();
 	ofDisableAlphaBlending();
@@ -123,6 +119,9 @@ string ofApp::getPlanetName() {
 }
 
 void ofApp::generatePlanet() {
+	generateStars();
+	//Recreate the generator
+	createGenerator();
 	//Setup the base for the land verts and water verts
 	landVerts.clear();
 	waterVerts.clear();
@@ -177,12 +176,12 @@ void ofApp::generateStars() {
 	//Remove all previous stars
 	stars.clear();
 	//Make a random amount of new stars
-	int max = ofRandom(50, 500);
+	int max = ofRandom(200, 1000);
 	for (int i = 0; i < max; i++) {
 		Star s;
 		s.c = ofColor::fromHsb(ofRandom(0, 255), ofRandom(0, 100), ofRandom(150, 255));
-		s.x = ofRandom(-centerScreen.x, centerScreen.x);
-		s.y = ofRandom(-centerScreen.y, centerScreen.y);
+		s.x = ofRandom(-centerScreen.x * 2, centerScreen.x * 2);
+		s.y = ofRandom(-centerScreen.y * 2, centerScreen.y * 2);
 		s.vx = ofRandom(0, .05);
 		s.vy = ofRandom(0, .05);
 		s.r = ofRandom(0.2, 2);
@@ -236,10 +235,10 @@ void ofApp::animateStars() {
 	for (int i = 0; i < max; i++) {
 		stars[i].x += stars[i].vx * starSpeedMult;
 		stars[i].y += stars[i].vy;
-		if (stars[i].x > centerScreen.x) stars[i].x = -centerScreen.x;
-		else if (stars[i].x < -centerScreen.x) stars[i].x = centerScreen.x;
-		if (stars[i].y > centerScreen.y) stars[i].y = -centerScreen.x;
-		else if (stars[i].y < -centerScreen.y) stars[i].y = centerScreen.x;
+		if (stars[i].x > centerScreen.x * 2) stars[i].x = -centerScreen.x;
+		else if (stars[i].x < -centerScreen.x * 2) stars[i].x = centerScreen.x;
+		if (stars[i].y > centerScreen.y * 2) stars[i].y = -centerScreen.x;
+		else if (stars[i].y < -centerScreen.y * 2) stars[i].y = centerScreen.x;
 	}
 }
 
@@ -302,14 +301,44 @@ float ofApp::getNoise(float angle, vector<NoiseOctave> &noiseOctaves) {
 	return sum;
 }
 
+//Create the noise generator with the multiple octaves for land and water
+void ofApp::createGenerator() {
+	waterOctaves.clear();
+	landOctaves.clear();
+	//Create the noise octaves for land
+	ofVec2f pt = rndPt();
+	addOctave(landOctaves, 1, 0.7, pt.x, pt.y);
+	pt = rndPt();
+	addOctave(landOctaves, 0.5, 0.1, pt.x, pt.y);
+	pt = rndPt();
+	addOctave(landOctaves, 2, -.4, pt.x, pt.y);
+	pt = rndPt();
+	addOctave(landOctaves, 5, -.1, pt.x, pt.y);
+	pt = rndPt();
+	addOctave(landOctaves, 10, 0.05, pt.x, pt.y);
+	//Create the noise octaves for water
+	pt = rndPt();
+	addOctave(waterOctaves, 0.5, 0.04, pt.x, pt.y);
+	pt = rndPt();
+	addOctave(waterOctaves, 2, -.04, pt.x, pt.y);
+	pt = rndPt();
+	addOctave(waterOctaves, 4, -.02, pt.x, pt.y);
+}
+
 //Adds a new octave to the provided vector of noise octaves for the generation
 void ofApp::addOctave(vector<NoiseOctave> &vec, float r, float a, float x, float y) {
 	NoiseOctave oct;
 	oct.radius = r;
-	oct.amplitude = a;
+	oct.amplitude = a * HEIGHT_RANGE;//Use a percentage [0-1] of the height range
 	oct.x = x;
 	oct.y = y;
 	vec.push_back(oct);
+}
+
+//Return a random point between 100,100 and 1000,1000 for the perlin noise gen
+ofVec2f ofApp::rndPt() {
+	ofVec2f v(ofRandom(100, 1000), ofRandom(100, 1000));
+	return v;
 }
 
 //Converts polar coordinates into carthesian coordinates
@@ -327,6 +356,8 @@ void ofApp::easeNumbers() {
 	//Ease the actual numbers
 	starSpeedMult += (targetStarSpeedMult - starSpeedMult) * 0.05;
 	planetOffset += (targetPlanetOffset - planetOffset) * 0.05;
+	shakeForce += (targetShakeForce - shakeForce) * 0.05;
+	bgAlpha += (targetBgAlpha - bgAlpha) * 0.05;
 }
 
 //Sets the hyperdrive to the required status, also checks the minimum time has passed
@@ -338,14 +369,18 @@ void ofApp::setHyperDrive(bool enabled) {
 	if (enabled) {
 		recording = true;
 		targetStarSpeedMult = 1000;
+		targetShakeForce = 100;
 		targetPlanetOffset = ofGetWidth() * 1.5;
 		recordingFrames = 0;
+		targetBgAlpha = 10;
 	}
 	else {
 		recording = false;
 		targetStarSpeedMult = 1;
 		planetOffset = -targetPlanetOffset; //Swap sides so the new planet comes from the other side
 		targetPlanetOffset = 0;
+		targetShakeForce = 0;
+		targetBgAlpha = 100;
 		generatePlanet();//Generate a new planet
 	}
 }

@@ -65,6 +65,11 @@ class ofApp : public ofBaseApp{
 		float targetStarSpeedMult = 1;
 		float planetOffset = 0;
 		float targetPlanetOffset = 0;
+		ofVec2f screenShake;
+		float shakeForce = 0;
+		float targetShakeForce = 0;
+		float bgAlpha = 255;
+		float targetBgAlpha = 255;
 
 		void setup();
 		void update();
@@ -85,8 +90,10 @@ class ofApp : public ofBaseApp{
 		void addOctave(vector<NoiseOctave> &vec, float r, float a, float x, float y);
 		float getNoise(float angle, vector<NoiseOctave> &noiseVector);
 		ofVec2f p2c(float angle, float radius);
+		ofVec2f rndPt();//Returns a random point for the noise generator
 		void easeNumbers();
 		void setHyperDrive(bool enabled);
+		void createGenerator();//Creates the noise generator for the land and water
 
 		void drawVerts(vector <ofVec2f> &vec);
 		void drawPlanet();
