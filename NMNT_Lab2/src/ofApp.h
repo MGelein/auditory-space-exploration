@@ -52,6 +52,9 @@ struct Planet {
 	ofColor waterColor;
 	ofColor landColor;
 	ofColor cloudColor;
+	string sizeClass;
+	string resources;
+	string description;
 };
 
 class ofApp : public ofBaseApp{
@@ -69,12 +72,34 @@ class ofApp : public ofBaseApp{
 		const float INC = TWO_PI / RESOLUTION;//Increment, resolution of the circle
 		const string NAME_PARTS[10] = {"XI", "XO" , "XT", "TL", "BU", "BY", "CH", "KR", "AN", "PO"};
 		const string END_PARTS[10] = {"TL", "BIN", "BAR", "BOF", "KYT", "BER", "NF", "TIR", "NC64", "BEG"};
+		const string RESOURCES[10] = {"Unobtainium", "Barium", "Uranium", "Mithril", "Adamantium", "Aluminium", "Ammonia", "Draconium", "Porrilium", "Xythor"};
+		const string SENT1[5] = {
+			"The galaxy surrounding you is bare.",
+			"Stars around you glisten and twinkle.",
+			"Your ship comes to a screeching halt.",
+			"The beauty of the cosmos dawns on you.",
+			"You arrive in an isolated galactic corner."
+		};
+		const string SENT2[5] = {
+			"Your hyperdrive spins down noisily.",
+			"You look upon the peaceful planet.",
+			"This planet reminds you of home.",
+			"The planet's color looks bleaker.",
+			"All movement looks harmonious."
+		};
+		const string SENT3[5] = {
+			"Those clouds look very fluffy!",
+			"Are those clouds poisonous?",
+			"You see movement on the surface!",
+			"Several lights shine from the planet!",
+			"Have we been here before?"
+		};
 
 		bool recording = false;//If we're currently recording
 		int recordingFrames = 0;
 		bool spacePressed = false;
 		float starSpeedMult = 1;
-		float targetStarSpeedMult = 1;
+		float targetStarSpeedMult = 50;
 		float planetOffset = 0;
 		float targetPlanetOffset = 0;
 		ofVec2f screenShake;
@@ -143,9 +168,9 @@ class ofApp : public ofBaseApp{
 		vector<float> samples;
 		vector<float> micHistory;
 		float micVolume = 0;
-		float avgVolume = 0;
-		float dynamicRange = 0;
-		float recordLength = 0;
+		float avgVolume = -1;
+		float dynamicRange = -1;
+		float recordLength = -1;
 		void analyseMic();
 		bool silenceRegistered = true;
 		int silences = 0;
@@ -167,4 +192,10 @@ class ofApp : public ofBaseApp{
 
 		void droneSound();
 		void hyperSound();
+
+		ofVec2f infoPos;
+		ofVec2f infoDim;
+		string getSizeClass();
+		string getResources();
+		string getDescription();
 };

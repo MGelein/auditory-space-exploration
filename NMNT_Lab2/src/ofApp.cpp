@@ -12,15 +12,17 @@ void ofApp::setup(){
 	//Load the font
 	font.title.load("nasalization.ttf", 32);	
 	font.debug.load("nasalization.ttf", 13);
-	font.normal.load("nasalization.ttf", 16);
+	font.normal.load("nasalization.ttf", 14);
 	//Calculate the dimensions of the screen and store half, this is used to set center of the coordinate space
 	centerScreen.x = ofGetWidth() / 2;
 	centerScreen.y = ofGetHeight() / 2;
 	screenShake.set(0, 0);
+	infoPos.set(-10, 300);
+	infoDim.set(450, 400);
 	//Generate the stars for the first background and a use-cue
-	planet.name = "Press <SPACE> to start";
+	planet.name = "Press [SPACE] to start";
 	generateStars();
-	//Load any sounds
+	ofSetVerticalSync(true);
 }
 
 //--------------------------------------------------------------
@@ -66,8 +68,6 @@ void ofApp::draw(){
 	ofTranslate(planetOffset, 0);
 	drawPlanet();
 
-	ofTranslate(centerScreen);
-	ofTranslate(planetOffset, 0);
 	drawMoons();
 	drawClouds();
 	
@@ -82,8 +82,7 @@ void ofApp::drawUI() {
 	//First render the title
 	ofSetColor(255);
 	font.title.drawString(planet.name, -font.title.stringWidth(planet.name) / 2 + centerScreen.x, 50);
-	//Now render some UI elements (top is 0, 0 again)
-	ofPushMatrix();
+	//Now render some UI elements (bottom is 0, 0)
 	ofTranslate(0, ofGetHeight());
 	ofSetColor(200);
 	font.debug.drawString("Silences: " + to_string(silences), 10, -10);
@@ -92,14 +91,83 @@ void ofApp::drawUI() {
 	font.debug.drawString("Mic Volume: ", centerScreen.x * 1.5, -10);
 	micGainPos.set(centerScreen.x * 1.5 + 120, -20);
 	drawMicGain();
+	//Move 0,0 to top and draw fps meter
+	ofSetColor(150);
+	ofTranslate(0, -ofGetHeight());
+	font.debug.drawString("fps: " + to_string((int) ofGetFrameRate()), 10, 20);
+
+	//Draw the info screen (not the first time
+	if (landVerts.size() == 0) return;
+	//Draw the holder
+	ofTranslate((recording ? -planetOffset : planetOffset) * 0.3, 0);
+	ofSetColor(planet.landColor);
+	ofDrawRectRounded(infoPos, infoDim.x, infoDim.y, 10);
+	ofSetColor(ofColor::fromHsb(0, 0, 255, 50));
+	ofDrawRectRounded(infoPos + 5, infoDim.x - 10, infoDim.y - 10, 10);
+	ofTranslate(infoPos.x + 20, infoPos.y + 20);
+	//Draw the info
+	ofSetColor(ofColor::white);
+	font.title.drawString("Size:", 10, 50);
+	font.normal.drawString(planet.sizeClass, 10, 80);
+	font.title.drawString("Resources: ", 10, 150);
+	font.normal.drawString(planet.resources, 10, 180);
+	font.title.drawString("Description: ", 10, 270);
+	font.normal.drawString(planet.description, 10, 300);
+}
+
+//Returns a couple of sentences of description
+string ofApp::getDescription() {
+	string sent1 = SENT1[(int) ofRandom(5)];
+	string sent2 = SENT2[(int) ofRandom(5)];
+	string sent3 = SENT3[(int) ofRandom(5)];
+	return sent1 + "\n" + sent2 + "\n" + sent3;
+}
+
+//Returns a list of possible resources that could be on this planet
+string ofApp::getResources() {
+	int res1Index = ofRandom(10);
+	int res2Index = ofRandom(10);
+	int res3Index = ofRandom(10);
+	//Make sure the indeces are unique
+	while (res2Index == res1Index) res2Index = ofRandom(10);
+	while (res2Index == res3Index || res1Index == res3Index) res3Index = ofRandom(10);
+	//Get the corresponding strings and res numbers
+	string res1 = RESOURCES[res1Index];
+	string res2 = RESOURCES[res2Index];
+	string res3 = RESOURCES[res3Index];
+	return res1 + ", " + res2 + ", \nand " + res3;
+}
+
+//Returns the size classification based on the base height
+string ofApp::getSizeClass() {
+	if (BASE_HEIGHT > 120) {
+		return "Gargantuan Cluster Giant"; 
+	}
+	else if (BASE_HEIGHT > 100) {
+		return "Towering Planar Orb";
+	}
+	else if (BASE_HEIGHT > 80) {
+		return "Large Astral Body";
+	}
+	else if (BASE_HEIGHT > 60) {
+		return "Strikingly Normal Planet";
+	}
+	else if (BASE_HEIGHT > 40) {
+		return "Cute Small Planet"; 
+	}
+	else {
+		return "Mini Dwarf Moon";
+	}
 }
 
 //Draws the little gain meter for the microphone
 void ofApp::drawMicGain() {
+	ofPushMatrix();
 	ofTranslate(micGainPos);
 	float w = ofMap(micVolume, 0, 0.2, 0, 1, true);
 	ofSetColor(ofColor::fromHsb(100 - w * 100, 255, 255));
 	ofDrawRectangle(0, 0, w * 200, 10);
+	ofPopMatrix();
 }
 
 //Draws the complete planet including rotation and everything
@@ -182,6 +250,10 @@ void ofApp::generatePlanet() {
 	planet.waterColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(150, 200));
 	planet.landColor = ofColor::fromHsb(ofRandom(255), ofRandom(100, 200), ofRandom(100, 150));
 	planet.cloudColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(200, 250), 100);
+	//Make the info for the display
+	planet.sizeClass = getSizeClass();
+	planet.resources = getResources();
+	planet.description = getDescription();
 }
 
 void ofApp::generateMoons() {
@@ -217,8 +289,8 @@ void ofApp::generateMoons() {
 void ofApp::generateStars() {
 	//Remove all previous stars
 	stars.clear();
-	//Make a random amount of new stars
-	int max = ofRandom(200, 1000);
+	//Make a random amount of new stars (first time, if avg vol is 0, make at least 800);
+	int max = ofRandom((avgVolume == 0) ? 800: 200, 1000);
 	for (int i = 0; i < max; i++) {
 		Star s;
 		s.c = ofColor::fromHsb(ofRandom(0, 255), ofRandom(0, 100), ofRandom(150, 255));
@@ -235,7 +307,7 @@ void ofApp::generateStars() {
 void ofApp::generateClouds() {
 	//Remove all prev clouds
 	clouds.clear();
-	int max = ofRandom(10, 20);
+	int max = ofRandom(5, 30);
 	for (int i = 0; i < max; i++) {
 		Cloud c;
 		c.angle = ofRandom(TWO_PI);
@@ -361,7 +433,7 @@ void ofApp::createGenerator() {
 	float silencesN = ofMap(silences, 0, 40, 0, 1, true);
 
 	//Depending on the recording length, set base height
-	BASE_HEIGHT = sqrt(ofMap((recordLength + avgVolumeN) / 2, 0, 1, 6000, 40000, true));
+	BASE_HEIGHT = sqrt(ofMap((recordLength + avgVolumeN) / 2, 0, 1, 2000, 40000, true));
 	MAX_HEIGHT = ofMap((dynamicRangeN + avgVolumeN) / 2, 0, 1, BASE_HEIGHT, 300, true);
 	HEIGHT_RANGE = MAX_HEIGHT - HEIGHT_RANGE;
 
@@ -618,6 +690,9 @@ void ofApp::audioSetup() {
 	drone4.player.setLoop(true);
 	drone5.player.play();
 	drone5.player.setLoop(true);
+
+	//Start the drone with app setup
+	droneSound();
 }
 
 //Handles incoming audio buffers
