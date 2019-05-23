@@ -39,6 +39,12 @@ struct Font {
 	ofTrueTypeFont debug;
 };
 
+struct Sound {
+	ofSoundPlayer player;
+	float volume;
+	float tVolume;
+};
+
 struct Planet {
 	float angle;
 	float angleV;
@@ -145,4 +151,16 @@ class ofApp : public ofBaseApp{
 		int silences = 0;
 		ofVec2f micGainPos;
 		void drawMicGain();
+
+		//The sound files we use for background audio
+		Sound hyperDrive;
+		Sound drone1;
+		Sound drone2;
+		Sound drone3;
+		Sound drone4;
+		Sound drone5;
+		int droneNum;//Number of the currently active drone
+
+		void droneSound();
+		void hyperSound();
 };

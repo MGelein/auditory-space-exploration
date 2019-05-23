@@ -20,6 +20,7 @@ void ofApp::setup(){
 	//Generate the stars for the first background and a use-cue
 	planet.name = "Press <SPACE> to start";
 	generateStars();
+	//Load any sounds
 }
 
 //--------------------------------------------------------------
@@ -80,6 +81,7 @@ void ofApp::drawUI() {
 	ofSetColor(255);
 	font.title.drawString(planet.name, -font.title.stringWidth(planet.name) / 2 + centerScreen.x, 50);
 	//Now render some UI elements (top is 0, 0 again)
+	ofPushMatrix();
 	ofTranslate(0, ofGetHeight());
 	ofSetColor(200);
 	font.debug.drawString("Silences: " + to_string(silences), 10, -10);
@@ -88,8 +90,6 @@ void ofApp::drawUI() {
 	font.debug.drawString("Mic Volume: ", centerScreen.x * 1.5, -10);
 	micGainPos.set(centerScreen.x * 1.5 + 120, -20);
 	drawMicGain();
-
-	//Draw some interesting facts about the planet
 }
 
 //Draws the little gain meter for the microphone
@@ -420,6 +420,33 @@ void ofApp::easeNumbers() {
 	bgAlpha += (targetBgAlpha - bgAlpha) * 0.05;
 	//Constantly pull micVolume lower, this 'erodes' mic volume, to make it pull to ground faster
 	micVolume *= 0.90;
+
+	//Ease all the volumes of the sounds
+	hyperDrive.volume += (hyperDrive.tVolume - hyperDrive.volume) * .01;
+	drone1.volume += (drone1.tVolume - drone1.volume) * .01;
+	drone2.volume += (drone2.tVolume - drone2.volume) * .01;
+	drone3.volume += (drone3.tVolume - drone3.volume) * .01;
+	drone4.volume += (drone4.tVolume - drone4.volume) * .01;
+	drone5.volume += (drone5.tVolume - drone5.volume) * .01;
+	//And set the sound to the corresponding level on each of the soundplayers
+	hyperDrive.player.setVolume(hyperDrive.volume);
+	drone1.player.setVolume(drone1.volume);
+	drone2.player.setVolume(drone2.volume);
+	drone3.player.setVolume(drone3.volume);
+	drone4.player.setVolume(drone4.volume);
+	drone5.player.setVolume(drone5.volume);
+	
+	//Check playback position and if the active one nears the end, find a new drone
+	Sound activeDrone;
+	if (droneNum == 1) activeDrone = drone1;
+	else if (droneNum == 2) activeDrone = drone2;
+	else if (droneNum == 3) activeDrone = drone3;
+	else if (droneNum == 4) activeDrone = drone4;
+	else if (droneNum == 5) activeDrone = drone5;
+	if (activeDrone.player.getPosition() > 0.95) {
+		activeDrone.tVolume = 0;
+		droneSound();
+	}
 }
 
 //Sets the hyperdrive to the required status, also checks the minimum time has passed
@@ -440,6 +467,7 @@ void ofApp::setHyperDrive(bool enabled) {
 		recordingFrames = 0;
 		targetBgAlpha = 10;
 		silences = 0;
+		hyperSound();
 	}
 	else {
 		recording = false;
@@ -456,7 +484,45 @@ void ofApp::setHyperDrive(bool enabled) {
 		cout << "Dynamic range was " << dynamicRange << endl;
 		cout << "Recording took " << recordingFrames << " frames, which means " << recordLength << endl;
 		generatePlanet();//Generate a new planet
+		droneSound();
 	}
+}
+
+//Makes a new balance of a couple of drone sounds
+void ofApp::droneSound() {
+	//Mute the hyperdrive
+	hyperDrive.tVolume = 0;
+	int pick = ofRandom(1, 6);
+	while (pick == droneNum) pick = ofRandom(1, 6);//Never pick the same drone twice
+	droneNum = pick;
+	if (droneNum == 1) {
+		drone1.tVolume = 1;
+		drone1.player.setPositionMS(0);
+	}
+	else if (droneNum == 2) {
+		drone2.tVolume = 1;
+		drone2.player.setPositionMS(0);
+	}
+	else if (droneNum == 3) { 
+		drone3.tVolume = 1;
+		drone3.player.setPositionMS(0);
+	}
+	else if (droneNum == 4) {
+		drone4.tVolume = 1;
+		drone4.player.setPositionMS(0);
+	}
+	else if (droneNum == 5) {
+		drone5.tVolume = 1;
+		drone5.player.setPositionMS(0);
+	}
+}
+
+//Turns of all drones and goes into hyper
+void ofApp::hyperSound() {
+	//Mute all drones
+	drone1.tVolume = drone2.tVolume = drone3.tVolume = drone4.tVolume = drone5.tVolume = 0;
+	//Set hyperdrive to full volume
+	hyperDrive.tVolume = 1;
 }
 
 //Returns the avg volume of the complete recording
@@ -502,6 +568,46 @@ void ofApp::audioSetup() {
 	int numOfBuffers = 4;       // number of buffers to queue, less buffers will be more responsive, but less stable.
 	mic.setup(this, channelsOut, channelsIn, sampleRate, bufferSize, numOfBuffers);
 	samples.assign(bufferSize, 0.0);
+
+	//Prepare all soudn files
+	hyperDrive.player.load("hyperdrive.ogg");
+	hyperDrive.volume = 0;
+	hyperDrive.tVolume = 0;
+	hyperDrive.player.setVolume(0);
+	drone1.player.load("drone1.ogg");
+	drone1.volume = 0;
+	drone1.tVolume = 0;
+	drone1.player.setVolume(0);
+	drone2.player.load("drone2.ogg");
+	drone2.volume = 0;
+	drone2.tVolume = 0;
+	drone2.player.setVolume(0);
+	drone3.player.load("drone3.ogg");
+	drone3.volume = 0;
+	drone3.tVolume = 0;
+	drone3.player.setVolume(0);
+	drone4.player.load("drone4.ogg");
+	drone4.volume = 0;
+	drone4.tVolume = 0;
+	drone4.player.setVolume(0);
+	drone5.player.load("drone5.ogg");
+	drone5.volume = 0;
+	drone5.tVolume = 0;
+	drone5.player.setVolume(0);
+
+	//Play all sounds and loop them all
+	hyperDrive.player.play();
+	hyperDrive.player.setLoop(true);
+	drone1.player.play();
+	drone1.player.setLoop(true);
+	drone2.player.play();
+	drone2.player.setLoop(true);
+	drone3.player.play();
+	drone3.player.setLoop(true);
+	drone4.player.play();
+	drone4.player.setLoop(true);
+	drone5.player.play();
+	drone5.player.setLoop(true);
 }
 
 //Handles incoming audio buffers
