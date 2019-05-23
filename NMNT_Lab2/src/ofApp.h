@@ -122,4 +122,10 @@ class ofApp : public ofBaseApp{
 		vector<ofVec2f> waterVerts;//The verteces that make up the circle of the water
 		vector<NoiseOctave> landOctaves;//The settings for the generator for land
 		vector<NoiseOctave> waterOctaves;//The settings for the generator for water
+
+		void audioSetup();
+		void audioIn(float * input, int bufferSize, int nChannels);
+		ofSoundStream mic;
+		vector<float> samples;
+		float micVolume = 0;
 };

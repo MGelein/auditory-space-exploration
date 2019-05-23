@@ -2,7 +2,11 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+	//Do some setup stuff with drawing settings
 	ofSetBackgroundAuto(false);
+	ofEnableSmoothing();
+	//Prepare audio settings
+	audioSetup();
 	//Load the font
 	planetNameFont.load("galaxy.ttf", 32);	
 	//Calculate the dimensions of the screen and store half, this is used to set center of the coordinate space
@@ -368,6 +372,7 @@ void ofApp::setHyperDrive(bool enabled) {
 	if (!enabled && recordingFrames < MIN_RECORDING_FRAMES) return;
 	if (enabled) {
 		recording = true;
+		micVolume = 0;//Reset volume to 0 for now
 		targetStarSpeedMult = 1000;
 		targetShakeForce = 100;
 		targetPlanetOffset = ofGetWidth() * 1.5;
@@ -383,6 +388,35 @@ void ofApp::setHyperDrive(bool enabled) {
 		targetBgAlpha = 100;
 		generatePlanet();//Generate a new planet
 	}
+}
+
+//Handles the audio setup, so sets up the mic for recording
+void ofApp::audioSetup() {
+	int channelsOut = 0;        // number of requested output channels (i.e. 2 for stereo).
+	int channelsIn = 1;         // number of requested input channels.
+	int sampleRate = 44100;     // requested sample rate (44100 is typical).
+	int bufferSize = 512;       // requested buffer size (256 is typical).
+	int numOfBuffers = 4;       // number of buffers to queue, less buffers will be more responsive, but less stable.
+	mic.setup(this, channelsOut, channelsIn, sampleRate, bufferSize, numOfBuffers);
+	samples.assign(bufferSize, 0.0);
+}
+
+//Handles incoming audio buffers
+void ofApp::audioIn(float * input, int bufferSize, int nChannels) {
+	//Only do this stuff if we're recording, else just ignore the buffers
+	if (!recording) return;
+	float bufferVolume = 0;
+	int numSamples = 0;//Number of valid samples (overflow samples are ignored)
+	for (int i = 0; i < bufferSize; i++) {
+		samples[i] = input[i];
+		if (samples[i] < 0) samples[i] = -samples[i];//Only positive sample values
+		if (samples[i] <= 1) {
+			numSamples++;
+			bufferVolume += samples[i];
+		}
+	}
+	bufferVolume /= numSamples;
+	micVolume += (bufferVolume - micVolume) * 0.1;
 }
 
 //--------------------------------------------------------------
