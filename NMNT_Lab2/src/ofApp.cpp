@@ -188,7 +188,12 @@ void ofApp::drawPlanet() {
 //Draws every star in the list of stars
 void ofApp::drawStars() {
 	int max = stars.size();
+	ofVec2f future, current;
 	for (int i = 0; i < max; i++) {
+		future.x = stars[i].x + stars[i].vx * starSpeedMult;
+		future.y = stars[i].y + stars[i].vy;
+		current.x = stars[i].x;
+		current.y = stars[i].y;
 		ofSetColor(stars[i].c);
 		ofDrawCircle(stars[i].x, stars[i].y, stars[i].r);
 	}
@@ -347,8 +352,6 @@ void ofApp::animateClouds() {
 void ofApp::animateStars() {
 	int max = stars.size();
 	for (int i = 0; i < max; i++) {
-		stars[i].x += stars[i].vx * starSpeedMult;
-		stars[i].y += stars[i].vy;
 		if (stars[i].x > centerScreen.x * 2) stars[i].x = -centerScreen.x;
 		else if (stars[i].x < -centerScreen.x * 2) stars[i].x = centerScreen.x;
 		if (stars[i].y > centerScreen.y * 2) stars[i].y = -centerScreen.x;
