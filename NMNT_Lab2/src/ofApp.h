@@ -49,10 +49,11 @@ class ofApp : public ofBaseApp{
 		ofVec2f centerScreen;
 		ofTrueTypeFont planetNameFont;
 
-		const int BASE_HEIGHT = 150; //The base height of the planet
-		const int MAX_HEIGHT = 250;//The max height (includes the baseheigth)
-		const int HEIGHT_RANGE = MAX_HEIGHT - BASE_HEIGHT;
+		int BASE_HEIGHT = 150; //The base height of the planet
+		int MAX_HEIGHT = 250;//The max height (includes the baseheigth)
+		int HEIGHT_RANGE = MAX_HEIGHT - BASE_HEIGHT;
 		const int MIN_RECORDING_FRAMES = 120;//Minimum amount of times for a recording
+		const int MAX_RECORDING_FRAMES = 600;//Maximum amount of time for a recording (at least for scaling)
 		const int RESOLUTION = 200; //The resolution of the circle both for land and water
 		const float INC = TWO_PI / RESOLUTION;//Increment, resolution of the circle
 		const string NAME_PARTS[10] = {"XI", "XO" , "XT", "TL", "BU", "BY", "CH", "KR", "AN", "PO"};
@@ -132,6 +133,7 @@ class ofApp : public ofBaseApp{
 		float micVolume = 0;
 		float avgVolume = 0;
 		float dynamicRange = 0;
+		float recordLength = 0;
 		void analyseMic();
 		bool silenceRegistered = true;
 		int silences = 0;

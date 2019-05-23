@@ -13,8 +13,9 @@ void ofApp::setup(){
 	centerScreen.x = ofGetWidth() / 2;
 	centerScreen.y = ofGetHeight() / 2;
 	screenShake.set(0, 0);
-	//Generate the planet
-	generatePlanet();
+	//Generate the stars for the first background and a use-cue
+	planet.name = "SPACE TO START";
+	generateStars();
 }
 
 //--------------------------------------------------------------
@@ -46,7 +47,8 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 	//Always translate the 0,0 of the coordinate space to the middle of the window
-	ofTranslate(centerScreen + screenShake);
+	ofTranslate(centerScreen);
+	ofTranslate(screenShake);
 
 	//Set the background to black for now and draw some stars
 	ofEnableAlphaBlending();
@@ -254,7 +256,7 @@ void ofApp::animateWater() {
 	//Animate the water
 	int max = waterOctaves.size();
 	for (int i = 0; i < max; i++) {
-		waterOctaves[i].x += 0.01;
+		if(waterOctaves[i].radius > 0) waterOctaves[i].x += 0.01;
 	}
 	//Regenerate water terrain
 	max = waterVerts.size();
@@ -310,20 +312,40 @@ float ofApp::getNoise(float angle, vector<NoiseOctave> &noiseOctaves) {
 
 //Create the noise generator with the multiple octaves for land and water
 void ofApp::createGenerator() {
+	//Clear the previous generators
 	waterOctaves.clear();
 	landOctaves.clear();
+	/**
+	We have the following params to play with
+	- avgVolume [0.001 - 0.2]
+	- recordLength [0-1]
+	- dynamicRange [0.001 - 0.2]
+	- silences (integer)
+	**/
+	//Normalize all variables (except for record length, which is already normalized)
+	float avgVolumeN = ofMap(avgVolume, 0.0005, 0.3, 0, 1, true);
+	float dynamicRangeN = ofMap(dynamicRange, 0.005, 0.3, 0, 1, true);
+	float silencesN = ofMap(silences, 0, 40, 0, 1, true);
+
+	//Depending on the recording length, set base height
+	BASE_HEIGHT = sqrt(ofMap((recordLength + avgVolumeN) / 2, 0, 1, 6000, 40000, true));
+	MAX_HEIGHT = ofMap((dynamicRangeN + avgVolumeN) / 2, 0, 1, BASE_HEIGHT, 300, true);
+	HEIGHT_RANGE = MAX_HEIGHT - HEIGHT_RANGE;
+
 	//Create the noise octaves for land
 	ofVec2f pt = rndPt();
 	addOctave(landOctaves, 1, 0.7, pt.x, pt.y);
 	pt = rndPt();
-	addOctave(landOctaves, 0.5, 0.1, pt.x, pt.y);
+	addOctave(landOctaves, 0.5, 0.4 * dynamicRange, pt.x, pt.y);
 	pt = rndPt();
-	addOctave(landOctaves, 2, -.4, pt.x, pt.y);
+	addOctave(landOctaves, 2, -1 * silencesN, pt.x, pt.y);
 	pt = rndPt();
 	addOctave(landOctaves, 5, -.1, pt.x, pt.y);
 	pt = rndPt();
-	addOctave(landOctaves, 10, 0.05, pt.x, pt.y);
+	addOctave(landOctaves, 10, avgVolume, pt.x, pt.y);
 	//Create the noise octaves for water
+	pt = rndPt();
+	addOctave(waterOctaves, 0, .5, pt.x, pt.y);//Main water level determiner
 	pt = rndPt();
 	addOctave(waterOctaves, 0.5, 0.04, pt.x, pt.y);
 	pt = rndPt();
@@ -395,11 +417,13 @@ void ofApp::setHyperDrive(bool enabled) {
 		targetPlanetOffset = 0;
 		targetShakeForce = 0;
 		targetBgAlpha = 100;
+		recordingFrames = (recordingFrames > MAX_RECORDING_FRAMES) ? MAX_RECORDING_FRAMES : recordingFrames;
+		recordLength = ofMap(recordingFrames, MIN_RECORDING_FRAMES, MAX_RECORDING_FRAMES, 0, 1, true);
 		cout << "There were " << silences << " silence(s)" << endl; 
 		cout << "Average volume was " << avgVolume << endl;
 		cout << "Dynamic range was " << dynamicRange << endl;
+		cout << "Recording took " << recordingFrames << " frames, which means " << recordLength << endl;
 		generatePlanet();//Generate a new planet
-
 	}
 }
 
