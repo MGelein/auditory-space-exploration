@@ -159,6 +159,10 @@ class ofApp : public ofBaseApp{
 		Sound drone3;
 		Sound drone4;
 		Sound drone5;
+		const float DRONE_VOLUME = 0.5f;
+		const float HYPERDRIVE_VOLUME = 0.5f;
+		ofSoundPlayer hit1;
+		ofSoundPlayer hit2;
 		int droneNum;//Number of the currently active drone
 
 		void droneSound();

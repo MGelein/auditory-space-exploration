@@ -444,7 +444,7 @@ void ofApp::easeNumbers() {
 	else if (droneNum == 4) activeDrone = drone4;
 	else if (droneNum == 5) activeDrone = drone5;
 	if (activeDrone.player.getPosition() > 0.95) {
-		activeDrone.tVolume = 0;
+		activeDrone.tVolume = DRONE_VOLUME;
 		droneSound();
 	}
 }
@@ -484,6 +484,7 @@ void ofApp::setHyperDrive(bool enabled) {
 		cout << "Dynamic range was " << dynamicRange << endl;
 		cout << "Recording took " << recordingFrames << " frames, which means " << recordLength << endl;
 		generatePlanet();//Generate a new planet
+		hit1.play();
 		droneSound();
 	}
 }
@@ -496,23 +497,23 @@ void ofApp::droneSound() {
 	while (pick == droneNum) pick = ofRandom(1, 6);//Never pick the same drone twice
 	droneNum = pick;
 	if (droneNum == 1) {
-		drone1.tVolume = 1;
+		drone1.tVolume = DRONE_VOLUME;
 		drone1.player.setPositionMS(0);
 	}
 	else if (droneNum == 2) {
-		drone2.tVolume = 1;
+		drone2.tVolume = DRONE_VOLUME;
 		drone2.player.setPositionMS(0);
 	}
 	else if (droneNum == 3) { 
-		drone3.tVolume = 1;
+		drone3.tVolume = DRONE_VOLUME;
 		drone3.player.setPositionMS(0);
 	}
 	else if (droneNum == 4) {
-		drone4.tVolume = 1;
+		drone4.tVolume = DRONE_VOLUME;
 		drone4.player.setPositionMS(0);
 	}
 	else if (droneNum == 5) {
-		drone5.tVolume = 1;
+		drone5.tVolume = DRONE_VOLUME;
 		drone5.player.setPositionMS(0);
 	}
 }
@@ -522,7 +523,9 @@ void ofApp::hyperSound() {
 	//Mute all drones
 	drone1.tVolume = drone2.tVolume = drone3.tVolume = drone4.tVolume = drone5.tVolume = 0;
 	//Set hyperdrive to full volume
-	hyperDrive.tVolume = 1;
+	hyperDrive.tVolume = HYPERDRIVE_VOLUME;
+	//Play the second hit 
+	hit2.play();
 }
 
 //Returns the avg volume of the complete recording
@@ -568,6 +571,11 @@ void ofApp::audioSetup() {
 	int numOfBuffers = 4;       // number of buffers to queue, less buffers will be more responsive, but less stable.
 	mic.setup(this, channelsOut, channelsIn, sampleRate, bufferSize, numOfBuffers);
 	samples.assign(bufferSize, 0.0);
+	//Load the two hits
+	hit1.load("hit1.ogg");
+	hit1.setVolume(0.5);
+	hit2.load("hit2.ogg");
+	hit2.setVolume(0.5);
 
 	//Prepare all soudn files
 	hyperDrive.player.load("hyperdrive.ogg");
