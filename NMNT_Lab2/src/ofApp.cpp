@@ -16,27 +16,12 @@ void ofApp::setup(){
 	addOctave(waterOctaves, 2, -4, 200, 200);
 	addOctave(waterOctaves, 4, -2, 250, 250);
 	
-	//Setup the base for the land verts and water verts
-	for (float a = 0; a < TWO_PI; a += INC) {
-		ofVec2f v;
-		ofVec2f v2;
-		landVerts.push_back(v);
-		waterVerts.push_back(v2);
-	}
-	
 	//Calculate the dimensions of the screen and store half, this is used to set center of the coordinate space
 	centerScreen.x = ofGetWidth() / 2;
 	centerScreen.y = ofGetHeight() / 2;
-	//Generate the stars and clouds
+	//Generate the stars
 	generateStars();
-	generateClouds();
-	generateMoons();
-	//Get a nice name, and some water and land colors
-	planet.name = getPlanetName();
-	planet.angleV = 0.1;
-	planet.waterColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(150, 200));
-	planet.landColor = ofColor::fromHsb(ofRandom(255), ofRandom(100, 200), ofRandom(100, 150));
-	planet.cloudColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(200, 250), 100);
+	generatePlanet();
 }
 
 //--------------------------------------------------------------
@@ -135,6 +120,27 @@ string ofApp::getPlanetName() {
 	int index = ofRandom(0, 10);
 	name += END_PARTS[index];
 	return name;
+}
+
+void ofApp::generatePlanet() {
+	//Setup the base for the land verts and water verts
+	landVerts.clear();
+	waterVerts.clear();
+	for (float a = 0; a < TWO_PI; a += INC) {
+		ofVec2f v;
+		ofVec2f v2;
+		landVerts.push_back(v);
+		waterVerts.push_back(v2);
+	}
+	//Generate the clouds and the moon
+	generateClouds();
+	generateMoons();
+	//Get a nice name, and some water and land colors
+	planet.name = getPlanetName();
+	planet.angleV = ofRandom(0.05, 0.1);
+	planet.waterColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(150, 200));
+	planet.landColor = ofColor::fromHsb(ofRandom(255), ofRandom(100, 200), ofRandom(100, 150));
+	planet.cloudColor = ofColor::fromHsb(ofRandom(255), ofRandom(50, 100), ofRandom(200, 250), 100);
 }
 
 void ofApp::generateMoons() {
@@ -340,6 +346,7 @@ void ofApp::setHyperDrive(bool enabled) {
 		targetStarSpeedMult = 1;
 		planetOffset = -targetPlanetOffset; //Swap sides so the new planet comes from the other side
 		targetPlanetOffset = 0;
+		generatePlanet();//Generate a new planet
 	}
 }
 

@@ -92,6 +92,7 @@ class ofApp : public ofBaseApp{
 		void drawPlanet();
 		void animateWater();
 		void animateTerrain();
+		void generatePlanet();
 
 		void generateMoons();
 		void animateMoons();
