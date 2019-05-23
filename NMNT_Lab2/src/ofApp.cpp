@@ -3,18 +3,22 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	//Do some setup stuff with drawing settings
+	ofSetWindowPosition(0, 30);
+	ofSetWindowTitle("Auditory Space Exploration");
 	ofSetBackgroundAuto(false);
 	ofEnableSmoothing();
 	//Prepare audio settings
 	audioSetup();
 	//Load the font
-	planetNameFont.load("galaxy.ttf", 32);	
+	font.title.load("nasalization.ttf", 32);	
+	font.debug.load("nasalization.ttf", 13);
+	font.normal.load("nasalization.ttf", 16);
 	//Calculate the dimensions of the screen and store half, this is used to set center of the coordinate space
 	centerScreen.x = ofGetWidth() / 2;
 	centerScreen.y = ofGetHeight() / 2;
 	screenShake.set(0, 0);
 	//Generate the stars for the first background and a use-cue
-	planet.name = "SPACE TO START";
+	planet.name = "Press <SPACE> to start";
 	generateStars();
 }
 
@@ -47,6 +51,7 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 	//Always translate the 0,0 of the coordinate space to the middle of the window
+	ofPushMatrix();
 	ofTranslate(centerScreen);
 	ofTranslate(screenShake);
 
@@ -62,11 +67,37 @@ void ofApp::draw(){
 
 	drawMoons();
 	drawClouds();
-	ofDisableAlphaBlending();
-
+	
 	//Finally draw the UI
+	ofPopMatrix();
+	drawUI();
+	ofDisableAlphaBlending();
+}
+
+//Draws all the UI elements
+void ofApp::drawUI() {
+	//First render the title
 	ofSetColor(255);
-	planetNameFont.drawString(planet.name, - planetNameFont.stringWidth(planet.name) / 2, -centerScreen.y + 50);
+	font.title.drawString(planet.name, -font.title.stringWidth(planet.name) / 2 + centerScreen.x, 50);
+	//Now render some UI elements (top is 0, 0 again)
+	ofTranslate(0, ofGetHeight());
+	ofSetColor(200);
+	font.debug.drawString("Silences: " + to_string(silences), 10, -10);
+	font.debug.drawString("Average Volume: " + to_string(avgVolume), centerScreen.x / 3, -10);
+	font.debug.drawString("Dynamic Range: " + to_string(dynamicRange), centerScreen.x, -10);
+	font.debug.drawString("Mic Volume: ", centerScreen.x * 1.5, -10);
+	micGainPos.set(centerScreen.x * 1.5 + 120, -20);
+	drawMicGain();
+
+	//Draw some interesting facts about the planet
+}
+
+//Draws the little gain meter for the microphone
+void ofApp::drawMicGain() {
+	ofTranslate(micGainPos);
+	float w = ofMap(micVolume, 0, 0.2, 0, 1, true);
+	ofSetColor(ofColor::fromHsb(100 - w * 100, 255, 255));
+	ofDrawRectangle(0, 0, w * 200, 10);
 }
 
 //Draws the complete planet including rotation and everything
@@ -401,6 +432,7 @@ void ofApp::setHyperDrive(bool enabled) {
 		recording = true;
 		micVolume = 0;//Reset volume to 0 for now
 		avgVolume = 0;
+		planet.name = "Recording...";
 		micHistory.clear();
 		targetStarSpeedMult = 1000;
 		targetShakeForce = 100;
@@ -474,8 +506,6 @@ void ofApp::audioSetup() {
 
 //Handles incoming audio buffers
 void ofApp::audioIn(float * input, int bufferSize, int nChannels) {
-	//Only do this stuff if we're recording, else just ignore the buffers
-	if (!recording) return;
 	float bufferVolume = 0;
 	int numSamples = 0;//Number of valid samples (overflow samples are ignored)
 	for (int i = 0; i < bufferSize; i++) {

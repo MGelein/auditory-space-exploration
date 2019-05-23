@@ -33,6 +33,12 @@ struct Star{
 	ofColor c;//The color of this star
 };
 
+struct Font {
+	ofTrueTypeFont title;
+	ofTrueTypeFont normal;
+	ofTrueTypeFont debug;
+};
+
 struct Planet {
 	float angle;
 	float angleV;
@@ -47,8 +53,7 @@ class ofApp : public ofBaseApp{
 	public:
 		
 		ofVec2f centerScreen;
-		ofTrueTypeFont planetNameFont;
-
+		Font font;
 		int BASE_HEIGHT = 150; //The base height of the planet
 		int MAX_HEIGHT = 250;//The max height (includes the baseheigth)
 		int HEIGHT_RANGE = MAX_HEIGHT - BASE_HEIGHT;
@@ -95,6 +100,7 @@ class ofApp : public ofBaseApp{
 		void easeNumbers();
 		void setHyperDrive(bool enabled);
 		void createGenerator();//Creates the noise generator for the land and water
+		void drawUI();
 
 		void drawVerts(vector <ofVec2f> &vec);
 		void drawPlanet();
@@ -137,4 +143,6 @@ class ofApp : public ofBaseApp{
 		void analyseMic();
 		bool silenceRegistered = true;
 		int silences = 0;
+		ofVec2f micGainPos;
+		void drawMicGain();
 };
