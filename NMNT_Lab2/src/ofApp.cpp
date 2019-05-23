@@ -52,6 +52,8 @@ void ofApp::update(){
 	animateClouds();
 	animateStars();
 	animateMoons();
+	//Ease all numbers
+	easeNumbers();
 }
 
 //--------------------------------------------------------------
@@ -64,6 +66,7 @@ void ofApp::draw(){
 	drawStars();
 
 	//Now draw the planet and clouds
+	ofTranslate(planetOffset, 0);
 	drawPlanet();
 
 	ofEnableAlphaBlending();
@@ -225,7 +228,7 @@ void ofApp::animateClouds() {
 void ofApp::animateStars() {
 	int max = stars.size();
 	for (int i = 0; i < max; i++) {
-		stars[i].x += stars[i].vx;
+		stars[i].x += stars[i].vx * starSpeedMult;
 		stars[i].y += stars[i].vy;
 		if (stars[i].x > centerScreen.x) stars[i].x = -centerScreen.x;
 		else if (stars[i].x < -centerScreen.x) stars[i].x = centerScreen.x;
@@ -310,57 +313,59 @@ ofVec2f ofApp::p2c(float angle, float radius) {
 	return v;
 }
 
+//Eases some numbers towards their target values
+void ofApp::easeNumbers() {
+	//Keep track ofrecording frames if we're recording
+	if (recording) recordingFrames++;
+	if (recordingFrames > MIN_RECORDING_FRAMES && !spacePressed) setHyperDrive(false);
+	//Ease the actual numbers
+	starSpeedMult += (targetStarSpeedMult - starSpeedMult) * 0.05;
+	planetOffset += (targetPlanetOffset - planetOffset) * 0.05;
+}
+
+//Sets the hyperdrive to the required status, also checks the minimum time has passed
+void ofApp::setHyperDrive(bool enabled) {
+	//Ignore if we're not changing anything
+	if (enabled == recording) return;
+	//Ignore if we haven't passed the required minimum recording time yet
+	if (!enabled && recordingFrames < MIN_RECORDING_FRAMES) return;
+	if (enabled) {
+		recording = true;
+		targetStarSpeedMult = 1000;
+		targetPlanetOffset = ofGetWidth() * 1.5;
+		recordingFrames = 0;
+	}
+	else {
+		recording = false;
+		targetStarSpeedMult = 1;
+		planetOffset = -targetPlanetOffset; //Swap sides so the new planet comes from the other side
+		targetPlanetOffset = 0;
+	}
+}
+
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-	
+	if (key == 32) {//If space is pressed
+		spacePressed = true;
+		setHyperDrive(true);
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+	if (key == 32) {//If space is released
+		spacePressed = false;
+		setHyperDrive(false);
+	}
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
-}
+void ofApp::mouseMoved(int x, int y ){}
+void ofApp::mouseDragged(int x, int y, int button){}
+void ofApp::mousePressed(int x, int y, int button){}
+void ofApp::mouseReleased(int x, int y, int button){}
+void ofApp::mouseEntered(int x, int y){}
+void ofApp::mouseExited(int x, int y){}
+void ofApp::windowResized(int w, int h){}
+void ofApp::gotMessage(ofMessage msg){}
+void ofApp::dragEvent(ofDragInfo dragInfo){}
