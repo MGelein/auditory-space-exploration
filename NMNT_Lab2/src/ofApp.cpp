@@ -296,8 +296,8 @@ void ofApp::generateStars() {
 		s.c = ofColor::fromHsb(ofRandom(0, 255), ofRandom(0, 100), ofRandom(150, 255));
 		s.x = ofRandom(-centerScreen.x * 2, centerScreen.x * 2);
 		s.y = ofRandom(-centerScreen.y * 2, centerScreen.y * 2);
-		s.vx = ofRandom(0, .05);
-		s.vy = ofRandom(0, .05);
+		s.vx = ofRandom(0, .2);
+		s.vy = ofRandom(0, .2);
 		s.r = ofRandom(0.2, 2);
 		stars.push_back(s);
 	}
@@ -535,8 +535,8 @@ void ofApp::setHyperDrive(bool enabled) {
 		avgVolume = 0;
 		planet.name = "Recording...";
 		micHistory.clear();
-		targetStarSpeedMult = 1000;
-		targetShakeForce = 100;
+		targetStarSpeedMult = 100;
+		targetShakeForce = 30;
 		targetPlanetOffset = ofGetWidth() * 1.5;
 		recordingFrames = 0;
 		targetBgAlpha = 10;

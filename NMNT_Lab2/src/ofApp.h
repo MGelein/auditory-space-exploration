@@ -99,7 +99,7 @@ class ofApp : public ofBaseApp{
 		int recordingFrames = 0;
 		bool spacePressed = false;
 		float starSpeedMult = 1;
-		float targetStarSpeedMult = 50;
+		float targetStarSpeedMult = 15;
 		float planetOffset = 0;
 		float targetPlanetOffset = 0;
 		ofVec2f screenShake;
